@@ -1,0 +1,33 @@
+﻿@page "/GreeterGrpc"
+
+<h3>@HelloMessage</h3>
+
+@code {
+    [Inject] protected GrpcChannel? channel { get; set; }
+
+    public string HelloMessage { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetGreet();
+
+        await base.OnInitializedAsync();
+    }
+
+    protected async Task GetGreet()
+    {
+        var client = RegisterGrpcGreeterService();
+
+        var getGreetRequest = new GrpcGreetProtobuf.HelloRequest() { Name = "Johny Dảk" };
+
+        var response = await client.SayHelloAsync(getGreetRequest);
+
+        HelloMessage = response.Message;
+    }
+
+
+    protected GrpcGreetProtobuf.Greeter.GreeterClient RegisterGrpcGreeterService()
+    {
+        return new GrpcGreetProtobuf.Greeter.GreeterClient(channel);
+    }
+}

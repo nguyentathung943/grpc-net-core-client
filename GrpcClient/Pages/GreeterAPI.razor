@@ -1,0 +1,38 @@
+﻿@page "/GreeterApi"
+@inject HttpClient Http
+
+<h3>@HelloMessage</h3>
+
+@code {
+    private string HelloMessage { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetGreet();
+        await base.OnInitializedAsync();
+    }
+
+    private async Task GetGreet()
+    {
+        var Name = "Johny dảk";
+
+        var postBody = ConverToBodyStringContent(Name);
+
+        var response = await Http.PostAsync("Greet", postBody);
+        var content = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new ApplicationException(content);
+        }
+
+        HelloMessage = content;
+    }
+
+    private StringContent ConverToBodyStringContent<T>(T model)
+    {
+        var json = JsonSerializer.Serialize<T>(model);
+        var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
+        return stringContent;
+    }
+}
