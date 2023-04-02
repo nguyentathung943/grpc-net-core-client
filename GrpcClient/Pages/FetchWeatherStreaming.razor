@@ -1,10 +1,10 @@
-﻿@page "/FetchWeatherGrpc"
+﻿@page "/FetchWeatherGrpcStream"
 
 <PageTitle>Weather forecast Grpc</PageTitle>
 
 <h1>Weather forecast</h1>
 
-<p>This component demonstrates fetching data from the GRPC server using Unary Request.</p>
+<p>This component demonstrates fetching data from the GRPC server using Server Streaming</p>
 
 @if (forecasts == null)
 {
@@ -38,7 +38,7 @@ else
 @code {
     [Inject] protected GrpcChannel? channel { get; set; }
 
-    private IEnumerable<GrpcWeatherForecastProtobuf.WeatherForecastData> forecasts;
+    private List<GrpcWeatherForecastProtobuf.WeatherForecastData> forecasts = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -51,13 +51,25 @@ else
     {
         var client = RegisterGrpcGreeterService();
 
-        var getWeatherForecastRequest = new GrpcWeatherForecastProtobuf.WeatherForecastRequest();
+        var getWeatherForecastRequest = new GrpcWeatherForecastProtobuf.WeatherForecastRequest() { ChunkLimit = 20 };
 
-        var response = await client.ForecastingAsync(getWeatherForecastRequest);
+        using (var call = client.ForecastStreaming(getWeatherForecastRequest))
+        {
+            await foreach (var response in call.ResponseStream.ReadAllAsync())
+            {
+                forecasts.Add(
+                    new GrpcWeatherForecastProtobuf.WeatherForecastData()
+                    {
+                        Summary = response.Summary,
+                        TemperatureC = response.TemperatureC,
+                        TemperatureF = response.TemperatureF,
+                        Timestamp = response.Timestamp
+                    }
+                );
 
-        forecasts = response.WeatherForecastData;
-
-        StateHasChanged();
+                StateHasChanged();
+            }
+        }
     }
 
 

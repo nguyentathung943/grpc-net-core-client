@@ -19,14 +19,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="..\GrpcClient.Protobuf\Greet\Greet.proto" ProtoRoot="..\GrpcClient.Protobuf" GrpcServices="Client" />
-    <Protobuf Include="..\GrpcClient.Protobuf\Calculator\Calculator.proto" ProtoRoot="..\GrpcClient.Protobuf" GrpcServices="Client" />
-    <Protobuf Include="..\GrpcClient.Protobuf\Calculator\Sum.proto" ProtoRoot="..\GrpcClient.Protobuf" GrpcServices="Client" />
-    <Protobuf Include="..\GrpcClient.Protobuf\WeatherForecast\WeatherForecast.proto" ProtoRoot="..\GrpcClient.Protobuf" GrpcServices="Client" />
+    <Protobuf Include="..\GrpcClient.Protobuf\Protos\Greet\*.proto" ProtoRoot="..\GrpcClient.Protobuf\Protos\Greet" />
+    <Protobuf Include="..\GrpcClient.Protobuf\Protos\Calculator\*.proto" ProtoRoot="..\GrpcClient.Protobuf\Protos\Calculator" />
+    <Protobuf Include="..\GrpcClient.Protobuf\Protos\WeatherForecast\*.proto" ProtoRoot="..\GrpcClient.Protobuf\Protos\WeatherForecast" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\GrpcClient.Protobuf\GrpcClient.Protobuf.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Pages\FetchWeatherStreaming.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
   </ItemGroup>
 
 </Project>

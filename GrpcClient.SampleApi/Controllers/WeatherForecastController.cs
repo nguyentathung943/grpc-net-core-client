@@ -17,8 +17,9 @@ namespace GrpcClient.SampleApi.Controllers
         public IEnumerable<WeatherForecast> Get()
         {
             var forecastData = new List<WeatherForecast>();
+            var limit = 20000;
 
-            for (int i = 0; i < 100000; i++)
+            for (int i = 0; i < limit; i++)
             {
                 forecastData.Add(new()
                 {
