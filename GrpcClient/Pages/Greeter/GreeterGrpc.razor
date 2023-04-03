@@ -1,11 +1,21 @@
 ﻿@page "/GreeterGrpc"
 
+
+<div>
+    <button @onclick="GetGreet" class="btn-submit">Send Request</button>
+    <span>Time taken: <span class="time">@_stopWatch.ElapsedMilliseconds</span> milliseconds</span>
+</div>
+<hr/>
+
+
 <h3>@HelloMessage</h3>
 
 @code {
     [Inject] protected GrpcChannel? channel { get; set; }
 
     public string HelloMessage { get; set; } = string.Empty;
+
+    private Stopwatch _stopWatch = new Stopwatch();
 
     protected override async Task OnInitializedAsync()
     {
@@ -16,6 +26,10 @@
 
     protected async Task GetGreet()
     {
+        ResetState();
+
+        _stopWatch.Start();
+
         var client = RegisterGrpcGreeterService();
 
         var getGreetRequest = new GrpcGreeterProtobuf.HelloRequest() { Name = "Johny Dảk" };
@@ -23,8 +37,18 @@
         var response = await client.SayHelloAsync(getGreetRequest);
 
         HelloMessage = response.Message;
+
+        _stopWatch.Stop();
     }
 
+    private void ResetState()
+    {
+        HelloMessage = string.Empty;
+
+        _stopWatch.Reset();
+
+        StateHasChanged();
+    }
 
     protected GrpcGreeterProtobuf.Greeter.GreeterClient RegisterGrpcGreeterService()
     {

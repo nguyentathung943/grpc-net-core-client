@@ -1,0 +1,142 @@
+﻿@page "/CurrentMax"
+@implements IDisposable
+
+<PageTitle>Find Current Max Value</PageTitle>
+
+<h1>Find Current Max Value</h1>
+
+<p>This component demonstrates sending and fetching Current Max Value from the GRPC server using Bi-directional streaming</p>
+
+<div>
+    <button @onclick="Reset" class="btn-submit">Reset State</button>
+    <hr/>
+    <input type="number" placeholder="Input Value" @bind-value="@InputValue" />
+    @if (!IsResetRequire)
+    {
+        <button @onclick="AddValue" class="btn-submit">Add Value</button>
+        <button @onclick="CompleteRequest" class="btn-submit">Get Max Value</button>
+    }
+
+    <hr />
+    <span>Input Values: </span>
+
+    @foreach (var value in ListValues)
+    {
+        <span>@value</span>
+        <span> </span>
+    }
+
+
+    @if (MaxResults.Any())
+    {
+        <hr />
+        @foreach (var result in MaxResults)
+        {
+            <span>@result</span>
+            <br/>
+        }
+
+        <span> Reset State for Other Comparison</span>
+    }
+
+</div>
+<hr />
+
+
+@code {
+    [Inject] protected GrpcChannel? channel { get; set; }
+
+    private List<int> ListValues { get; set; } = new();
+
+    private int InputValue { get; set; } = 0;
+
+    private List<String> MaxResults { get; set; } = new();
+
+    private AsyncDuplexStreamingCall<GrpcMaxProtobuf.MaxRequest, GrpcMaxProtobuf.MaxResponse> _call;
+
+    private GrpcCalculatorProtobuf.Calculator.CalculatorClient _client;
+
+    private bool IsResetRequire { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        RegisterClientCall();
+        await base.OnInitializedAsync();
+    }
+
+    private void RegisterClientCall()
+    {
+        _client = RegisterCalculatorService();
+
+        if (_client != null)
+        {
+            _call = _client.FindCurrentMax();
+        }
+    }
+
+    private async Task CompleteRequest()
+    {
+        IsResetRequire = true;
+        await _call.RequestStream.CompleteAsync();
+        await RegisterReceiveCurrentMaxValueHandler();
+    }
+
+    private async Task RegisterReceiveCurrentMaxValueHandler()
+    {
+        try
+        {
+            // Receive Current Max Value, create a back-ground Task
+            var readTask = Task.Run(async () =>
+            {
+                await foreach (var response in _call.ResponseStream.ReadAllAsync())
+                {
+                    MaxResults.Add($"Comparing {response.CurrentCompareValue} - Current Max value is {response.CurrentMaxValue} \n");
+                    StateHasChanged();
+                }
+            });
+
+            await readTask;
+        }
+        catch(RpcException ex)
+        {
+
+        }
+    }
+
+    private async Task AddValue()
+    {
+
+        ListValues.Add(InputValue);
+
+        //Sending Value
+        await _call.RequestStream.WriteAsync(new GrpcMaxProtobuf.MaxRequest { Value = InputValue });
+    }
+
+    public async Task Reset()
+    {
+        DisploseCall();
+        RegisterClientCall();
+        MaxResults = new();
+        ListValues = new();
+        InputValue = 0;
+        IsResetRequire = false;
+    }
+
+    public void DisploseCall()
+    {
+        if (_call != null)
+        {
+            _call.Dispose();
+        }
+    }
+
+    public void Dispose()
+    {
+        DisploseCall();
+    }
+
+    protected GrpcCalculatorProtobuf.Calculator.CalculatorClient RegisterCalculatorService()
+    {
+        return new GrpcCalculatorProtobuf.Calculator.CalculatorClient(channel);
+    }
+}

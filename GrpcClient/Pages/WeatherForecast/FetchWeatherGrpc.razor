@@ -1,0 +1,105 @@
+﻿@page "/FetchWeatherGrpc"
+
+<PageTitle>Weather forecast Grpc</PageTitle>
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the GRPC server using Unary Request.</p>
+
+<div>
+    <button @onclick="GetWeather" class="btn-submit">Send Request</button>
+    <hr />
+    <span>Time taken: <span class="time">@_stopWatch.ElapsedMilliseconds</span> milliseconds</span>
+    <hr />
+    <span>Number of Records:</span>
+    <span> @forecasts.Count</span>
+    <hr />
+    <label>Threshold: </label>
+    <input type="number" placeholder="Data Limit" @bind-value="@_dataLimit" />
+</div>
+<hr />
+
+@if (forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in forecasts)
+            {
+                <tr>
+                    <td>@forecast.Timestamp</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    [Inject] protected GrpcChannel? channel { get; set; }
+
+    private List<GrpcWeatherForecastProtobuf.WeatherForecastData> forecasts;
+
+    private Stopwatch _stopWatch = new Stopwatch();
+
+    private int _dataLimit { get; set; } = 100;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetWeather();
+
+        await base.OnInitializedAsync();
+    }
+
+    protected async Task GetWeather()
+    {
+        try
+        {
+            ResetState();
+
+            _stopWatch.Start();
+            var client = RegisterGrpcWeatherForecastService();
+
+            var getWeatherForecastRequest = new GrpcWeatherForecastProtobuf.WeatherForecastRequest() { DataLimit = _dataLimit };
+
+            var response = await client.ForecastingAsync(getWeatherForecastRequest);
+
+            forecasts = response.WeatherForecastData.ToList();
+
+            StateHasChanged();
+
+            _stopWatch.Stop();
+        }
+        catch (RpcException ex)
+        {
+
+        }
+    }
+
+    private void ResetState()
+    {
+        forecasts = new();
+
+        _stopWatch.Reset();
+
+        StateHasChanged();
+    }
+
+    protected GrpcWeatherForecastProtobuf.WeatherForecast.WeatherForecastClient RegisterGrpcWeatherForecastService()
+    {
+        return new GrpcWeatherForecastProtobuf.WeatherForecast.WeatherForecastClient(channel);
+    }
+}

@@ -13,11 +13,11 @@ namespace GrpcClient.SampleApi.Controllers
             _logger = logger;
         }
 
-        [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
+        [HttpPost(Name = "GetWeatherForecast")]
+        public IEnumerable<WeatherForecast> Post([FromBody] int dataLimit)
         {
             var forecastData = new List<WeatherForecast>();
-            var limit = 20000;
+            var limit = dataLimit;
 
             for (int i = 0; i < limit; i++)
             {

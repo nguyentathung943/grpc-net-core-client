@@ -1,10 +1,20 @@
 ﻿@page "/GreeterApi"
 @inject HttpClient Http
 
+<div>
+    <button @onclick="GetGreet" class="btn-submit">Send Request</button>
+    <span>Time taken: <span class="time">@_stopWatch.ElapsedMilliseconds</span> milliseconds</span>
+</div>
+<hr/>
+
+
 <h3>@HelloMessage</h3>
 
 @code {
     private string HelloMessage { get; set; }
+
+    private Stopwatch _stopWatch = new Stopwatch();
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -14,6 +24,10 @@
 
     private async Task GetGreet()
     {
+        ResetState();
+
+        _stopWatch.Start();
+
         var Name = "Johny dảk";
 
         var postBody = ConverToBodyStringContent(Name);
@@ -27,6 +41,17 @@
         }
 
         HelloMessage = content;
+
+        _stopWatch.Stop();
+    }
+
+    private void ResetState()
+    {
+        HelloMessage = string.Empty;
+
+        _stopWatch.Reset();
+
+        StateHasChanged();
     }
 
     private StringContent ConverToBodyStringContent<T>(T model)
