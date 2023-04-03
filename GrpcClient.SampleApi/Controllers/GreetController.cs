@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace GrpcClient.SampleApi.Controllers
 {
     [ApiController]
+    [ApiVersion("1.0")]
     [Route("[controller]")]
     public class GreetController : ControllerBase
     {
@@ -14,7 +15,7 @@ namespace GrpcClient.SampleApi.Controllers
             _logger = logger;
         }
 
-
+        [MapToApiVersion("1.0")]
         [HttpPost(Name = "GetGreet")]
         public string Post([FromBody] string Name)
         {

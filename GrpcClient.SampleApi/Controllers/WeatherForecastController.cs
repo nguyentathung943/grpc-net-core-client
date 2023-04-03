@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace GrpcClient.SampleApi.Controllers
 {
     [ApiController]
+    [ApiVersion("1.0")]
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
@@ -13,6 +14,7 @@ namespace GrpcClient.SampleApi.Controllers
             _logger = logger;
         }
 
+        [MapToApiVersion("1.0")]
         [HttpPost(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Post([FromBody] int dataLimit)
         {
