@@ -32,8 +32,8 @@ builder.Services.AddSingleton(services =>
     return GrpcChannel.ForAddress(backendUrl, new GrpcChannelOptions
     {
         HttpHandler = httpHandler,
-        MaxSendMessageSize = 100 * 1024 * 1024,
-        MaxReceiveMessageSize = 100 * 1024 * 1024
+        MaxSendMessageSize = 100 * 1024 * 1024, //100 MB
+        MaxReceiveMessageSize = 100 * 1024 * 1024 //100 MB
     });
 });
 

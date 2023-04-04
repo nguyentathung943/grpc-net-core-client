@@ -1,5 +1,5 @@
 ﻿@page "/GreeterApi"
-@inject HttpClient Http
+@inject HttpClient _http
 
 <div>
     <button @onclick="GetGreet" class="btn-submit">Send Request</button>
@@ -30,9 +30,12 @@
 
         var Name = "Johny dảk";
 
-        var postBody = ConverToBodyStringContent(Name);
+        var postBody = Helper.ConverToBodyStringContent(Name);
+        var httpRequest = Helper.CreateHttpRequest("/Greet");
+        httpRequest.Method = HttpMethod.Post;
+        httpRequest.Content = postBody;
 
-        var response = await Http.PostAsync("Greet", postBody);
+        var response = await _http.SendAsync(httpRequest);
         var content = await response.Content.ReadAsStringAsync();
 
         if (!response.IsSuccessStatusCode)
@@ -52,12 +55,5 @@
         _stopWatch.Reset();
 
         StateHasChanged();
-    }
-
-    private StringContent ConverToBodyStringContent<T>(T model)
-    {
-        var json = JsonSerializer.Serialize<T>(model);
-        var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
-        return stringContent;
     }
 }
