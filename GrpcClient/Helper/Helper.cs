@@ -8,7 +8,6 @@ namespace GrpcClient.Helper
         public static HttpRequestMessage CreateHttpRequest(string requestUrl)
         {
             var httpRequest = new HttpRequestMessage();
-            httpRequest.Version = new Version(1, 1);
             httpRequest.RequestUri = new Uri(requestUrl, UriKind.Relative);
             return httpRequest;
         }
