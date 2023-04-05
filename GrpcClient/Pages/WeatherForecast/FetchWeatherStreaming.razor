@@ -69,18 +69,24 @@ else
 
             _call = _client.ForecastStreaming(getWeatherForecastRequest);
 
-            await foreach (var response in _call.ResponseStream.ReadAllAsync())
+            // Alternative, instead of _call.ResponseStream.ReadAllAsync everytime, we can control this by create a background Task
+            Task onWeatherForecastStreamingResponseHandler = Task.Run(async () =>
             {
-                forecasts.Add(new GrpcWeatherForecastProtobuf.WeatherForecastData()
-                    {
-                        Summary = response.Summary,
-                        TemperatureC = response.TemperatureC,
-                        TemperatureF = response.TemperatureF,
-                        Timestamp = response.Timestamp
-                    });
+                await foreach (var response in _call.ResponseStream.ReadAllAsync())
+                {
+                    forecasts.Add(new GrpcWeatherForecastProtobuf.WeatherForecastData()
+                        {
+                            Summary = response.Summary,
+                            TemperatureC = response.TemperatureC,
+                            TemperatureF = response.TemperatureF,
+                            Timestamp = response.Timestamp
+                        });
 
-                StateHasChanged();
-            }
+                    StateHasChanged();
+                }
+            });
+
+            await onWeatherForecastStreamingResponseHandler;
 
             _stopWatch.Stop();
         }

@@ -58,9 +58,6 @@
 
     private bool IsResetRequire { get; set; } = false;
 
-    // Alternative, instead of _call.ResponseStream.ReadAllAsync everytime, we can control this by create a background Task
-    private Task? _onCurrentMaxReceiveHandler { get; set; } = null;
-
     protected override async Task OnInitializedAsync()
     {
         RegisterClientCall();
@@ -88,8 +85,8 @@
     {
         try
         {
-            // Receive Current Max Value, create a back-ground Task
-            _onCurrentMaxReceiveHandler = Task.Run(async () =>
+            // Alternative, instead of _call.ResponseStream.ReadAllAsync everytime, we can control this by create a background Task
+            Task? _onCurrentMaxReceiveHandler = Task.Run(async () =>
             {
                 await foreach (var response in _call.ResponseStream.ReadAllAsync())
                 {
@@ -130,11 +127,6 @@
         if (_call != null)
         {
             _call.Dispose();
-        }
-
-        if (_onCurrentMaxReceiveHandler!=null)
-        {
-            _onCurrentMaxReceiveHandler.Dispose();
         }
     }
 
