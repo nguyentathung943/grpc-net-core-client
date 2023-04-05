@@ -45,11 +45,14 @@ else
 
     private int _chunkLimit { get; set; } = 20;
 
-    private AsyncServerStreamingCall<GrpcWeatherForecastProtobuf.WeatherForecastResponse> _call;
+    private AsyncServerStreamingCall<GrpcWeatherForecastProtobuf.WeatherForecastResponse> _call { get; set; } = null;
 
+    private GrpcWeatherForecastProtobuf.WeatherForecast.WeatherForecastClient _client { get; set; } = null;
 
     protected override async Task OnInitializedAsync()
     {
+        _client = RegisterGrpcWeatherForecastService();
+
         await GetWeather();
 
         await base.OnInitializedAsync();
@@ -63,12 +66,9 @@ else
 
             _stopWatch.Start();
 
-            var client = RegisterGrpcWeatherForecastService();
-
             var getWeatherForecastRequest = new GrpcWeatherForecastProtobuf.WeatherForecastRequest() { DataLimit = _dataLimit, ChunkLimit = _chunkLimit };
 
-            _call = client.ForecastingWithChunkLimit(getWeatherForecastRequest);
-
+            _call = _client.ForecastingWithChunkLimit(getWeatherForecastRequest);
 
             await foreach (var response in _call.ResponseStream.ReadAllAsync())
             {

@@ -51,9 +51,9 @@
 
     private float? AverageResult { get; set; } = null;
 
-    private AsyncClientStreamingCall<GrpcAverageProtobuf.AverageRequest, GrpcAverageProtobuf.AverageResponse> _call;
+    private AsyncClientStreamingCall<GrpcAverageProtobuf.AverageRequest, GrpcAverageProtobuf.AverageResponse> _call { get; set; } = null;
 
-    private GrpcCalculatorProtobuf.Calculator.CalculatorClient _client;
+    private GrpcCalculatorProtobuf.Calculator.CalculatorClient _client { get; set; } = null;
 
     private bool IsResetRequire { get; set; } = false;
 
@@ -84,7 +84,7 @@
         IsResetRequire = true;
         await _call.RequestStream.CompleteAsync();
 
-        var response = await _call;
+        var response = await _call.ResponseAsync;
 
         AverageResult = response.Result;
     }

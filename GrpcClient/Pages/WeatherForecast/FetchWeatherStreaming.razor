@@ -45,10 +45,13 @@ else
 
     private int _dataLimit { get; set; } = 100;
 
-    private AsyncServerStreamingCall<GrpcWeatherForecastProtobuf.WeatherForecastData> _call;
+    private AsyncServerStreamingCall<GrpcWeatherForecastProtobuf.WeatherForecastData> _call { get; set; } = null;
+
+    private GrpcWeatherForecastProtobuf.WeatherForecast.WeatherForecastClient _client { get; set; } = null;
 
     protected override async Task OnInitializedAsync()
     {
+        _client = RegisterGrpcWeatherForecastService();
         await GetWeather();
 
         await base.OnInitializedAsync();
@@ -62,11 +65,9 @@ else
 
             _stopWatch.Start();
 
-            var client = RegisterGrpcWeatherForecastService();
-
             var getWeatherForecastRequest = new GrpcWeatherForecastProtobuf.WeatherForecastRequest() { DataLimit = _dataLimit };
 
-            _call = client.ForecastStreaming(getWeatherForecastRequest);
+            _call = _client.ForecastStreaming(getWeatherForecastRequest);
 
             await foreach (var response in _call.ResponseStream.ReadAllAsync())
             {

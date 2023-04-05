@@ -17,8 +17,14 @@
 
     private Stopwatch _stopWatch = new Stopwatch();
 
+    private GrpcGreeterProtobuf.Greeter.GreeterClient _client { get; set; } = null;
+
+    private AsyncUnaryCall<GrpcGreeterProtobuf.HelloReply> _call { get; set; } = null;
+
     protected override async Task OnInitializedAsync()
     {
+        _client = RegisterGrpcGreeterService();
+
         await GetGreet();
 
         await base.OnInitializedAsync();
@@ -30,13 +36,16 @@
 
         _stopWatch.Start();
 
-        var client = RegisterGrpcGreeterService();
-
         var getGreetRequest = new GrpcGreeterProtobuf.HelloRequest() { Name = "Johny Dảk" };
 
-        var response = await client.SayHelloAsync(getGreetRequest);
+        var response = await _client.SayHelloAsync(getGreetRequest);
 
         HelloMessage = response.Message;
+
+        // OR
+        //_call = _client.SayHelloAsync(getGreetRequest);
+        //var response = await _call.ResponseAsync;
+        //HelloMessage = response.Message;
 
         _stopWatch.Stop();
     }
